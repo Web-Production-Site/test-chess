@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معركة العقول: القديم vs الجديد (أيانوكوجي)</title>
+    <title>معركة العقول: القديم vs الجديد</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: white; text-align: center; padding: 20px; margin: 0; }
         h1 { color: #e94560; text-shadow: 0 0 15px rgba(233, 69, 96, 0.6); }
@@ -19,12 +19,12 @@
 </head>
 <body>
     <h1>⚔️ معركة العقول: القديم vs الجديد ⚔️</h1>
-    <p>القديم (متوازن) 🆚 الجديد (أيانوكوجي العدواني)</p>
+    <p>الروبوت يتحكم بالأبيض والأسود - أنت مجرد مشاهد </p>
     
     <div class="stats">
-        <div class="stat-item">🤖 <strong>القديم (أبيض):</strong> <span id="old-score" style="color:#4ecca3">0</span></div>
+        <div class="stat-item">🤖 <strong>القديم (أبيض):</strong> <span id="old-score">0</span></div>
         <div class="stat-item">🎯 <strong>الجولة:</strong> <span id="round">1</span></div>
-        <div class="stat-item">👁️ <strong>الجديد (أسود):</strong> <span id="new-score" style="color:#e94560">0</span></div>
+        <div class="stat-item">️ <strong>الجديد (أسود):</strong> <span id="new-score">0</span></div>
     </div>
 
     <div id="board-container"></div>
@@ -34,7 +34,6 @@
 
     <div id="log"></div>
 
-    <!-- المكتبات -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
@@ -65,10 +64,6 @@
                     score += piece.color === 'w' ? (PIECE_VALUES[piece.type] + pstValue) : -(PIECE_VALUES[piece.type] + pstValue);
                 }
             }
-            [[3,3],[3,4],[4,3],[4,4]].forEach(([r, c]) => {
-                const p = board[r][c];
-                if (p) score += p.color === 'w' ? (p.type === 'p' ? 10 : 15) : -(p.type === 'p' ? 10 : 15);
-            });
             return score;
         }
 
@@ -77,7 +72,6 @@
             if (isMaximizing) { if (standPat >= beta) return beta; if (alpha < standPat) alpha = standPat; } 
             else { if (standPat <= alpha) return alpha; if (beta > standPat) beta = standPat; }
             const moves = game.moves({ verbose: true }).filter(m => m.captured || m.promotion);
-            moves.sort((a, b) => ((PIECE_VALUES[b.captured]||0)*10 - PIECE_VALUES[b.piece]) - ((PIECE_VALUES[a.captured]||0)*10 - PIECE_VALUES[a.piece]));
             for (const move of moves) {
                 game.move(move);
                 const score = old_quiesce(game, alpha, beta, !isMaximizing);
@@ -88,23 +82,16 @@
             return isMaximizing ? alpha : beta;
         }
 
-        function old_minimax(game, depth, alpha, beta, isMaximizing, startTime, timeLimit) {
-            if (depth % 2 === 0 && Date.now() - startTime > timeLimit) return old_evaluatePosition(game);
+        function old_minimax(game, depth, alpha, beta, isMaximizing) {
             if (depth === 0) return old_quiesce(game, alpha, beta, isMaximizing);
-            if (game.game_over()) return game.in_checkmate() ? (isMaximizing ? -99999 + depth : 99999 - depth) : 0;
+            if (game.game_over()) return game.in_checkmate() ? (isMaximizing ? -99999 : 99999) : 0;
 
             const moves = game.moves({ verbose: true });
-            moves.sort((a, b) => {
-                let sA = (a.captured ? PIECE_VALUES[a.captured]*10 - PIECE_VALUES[a.piece] : 0) + (a.promotion ? 900 : 0);
-                let sB = (b.captured ? PIECE_VALUES[b.captured]*10 - PIECE_VALUES[b.piece] : 0) + (b.promotion ? 900 : 0);
-                return sB - sA;
-            });
-
             if (isMaximizing) {
                 let maxEval = -Infinity;
                 for (const move of moves) {
                     game.move(move);
-                    const eval = old_minimax(game, depth - 1, alpha, beta, false, startTime, timeLimit);
+                    const eval = old_minimax(game, depth - 1, alpha, beta, false);
                     game.undo();
                     maxEval = Math.max(maxEval, eval);
                     alpha = Math.max(alpha, eval);
@@ -115,7 +102,7 @@
                 let minEval = Infinity;
                 for (const move of moves) {
                     game.move(move);
-                    const eval = old_minimax(game, depth - 1, alpha, beta, true, startTime, timeLimit);
+                    const eval = old_minimax(game, depth - 1, alpha, beta, true);
                     game.undo();
                     minEval = Math.min(minEval, eval);
                     beta = Math.min(beta, eval);
@@ -127,13 +114,10 @@
 
         // --- المحرك الجديد (أيانوكوجي) ---
         function new_evaluatePosition(game) {
-            let score = old_evaluatePosition(game); // نبدأ بالأساس
-            
-            // 1. كره التعادل
+            let score = old_evaluatePosition(game);
             if (game.in_draw() || game.history().length > 50) {
-                score += (game.turn() === 'w' ? -300 : 300); 
+                score += (game.turn() === 'w' ? -300 : 300);
             }
-            // 2. العدوانية ومكافأة الكش
             if (game.in_check()) {
                 score += (game.turn() === 'w' ? 400 : -400);
             }
@@ -145,7 +129,6 @@
             if (isMaximizing) { if (standPat >= beta) return beta; if (alpha < standPat) alpha = standPat; } 
             else { if (standPat <= alpha) return alpha; if (beta > standPat) beta = standPat; }
             const moves = game.moves({ verbose: true }).filter(m => m.captured || m.promotion);
-            moves.sort((a, b) => ((PIECE_VALUES[b.captured]||0)*10 - PIECE_VALUES[b.piece]) - ((PIECE_VALUES[a.captured]||0)*10 - PIECE_VALUES[a.piece]));
             for (const move of moves) {
                 game.move(move);
                 const score = new_quiesce(game, alpha, beta, !isMaximizing);
@@ -156,23 +139,16 @@
             return isMaximizing ? alpha : beta;
         }
 
-        function new_minimax(game, depth, alpha, beta, isMaximizing, startTime, timeLimit) {
-            if (depth % 2 === 0 && Date.now() - startTime > timeLimit) return new_evaluatePosition(game);
+        function new_minimax(game, depth, alpha, beta, isMaximizing) {
             if (depth === 0) return new_quiesce(game, alpha, beta, isMaximizing);
-            if (game.game_over()) return game.in_checkmate() ? (isMaximizing ? -99999 + depth : 99999 - depth) : 0;
+            if (game.game_over()) return game.in_checkmate() ? (isMaximizing ? -99999 : 99999) : 0;
 
             const moves = game.moves({ verbose: true });
-            moves.sort((a, b) => {
-                let sA = (a.captured ? PIECE_VALUES[a.captured]*10 - PIECE_VALUES[a.piece] : 0) + (a.promotion ? 900 : 0);
-                let sB = (b.captured ? PIECE_VALUES[b.captured]*10 - PIECE_VALUES[b.piece] : 0) + (b.promotion ? 900 : 0);
-                return sB - sA;
-            });
-
             if (isMaximizing) {
                 let maxEval = -Infinity;
                 for (const move of moves) {
                     game.move(move);
-                    const eval = new_minimax(game, depth - 1, alpha, beta, false, startTime, timeLimit);
+                    const eval = new_minimax(game, depth - 1, alpha, beta, false);
                     game.undo();
                     maxEval = Math.max(maxEval, eval);
                     alpha = Math.max(alpha, eval);
@@ -183,7 +159,7 @@
                 let minEval = Infinity;
                 for (const move of moves) {
                     game.move(move);
-                    const eval = new_minimax(game, depth - 1, alpha, beta, true, startTime, timeLimit);
+                    const eval = new_minimax(game, depth - 1, alpha, beta, true);
                     game.undo();
                     minEval = Math.min(minEval, eval);
                     beta = Math.min(beta, eval);
@@ -193,41 +169,28 @@
             }
         }
 
-        // --- دالة اختيار الحركة الموحدة والمصححة (تمنع تدخل اللاعب) ---
-        function getBestMove(game, isOldEngine, timeLimit = 2000) {
+        // --- دالة اختيار الحركة (للأبيض والأسود) ---
+        function getBestMove(game, isOldEngine) {
             const moves = game.moves({ verbose: true });
             if (moves.length === 0) return null;
             if (moves.length === 1) return moves[0];
 
-            const startTime = Date.now();
-            let bestMove = null;
             const isMaximizing = game.turn() === 'w';
+            let bestMove = null;
             let bestScore = isMaximizing ? -Infinity : Infinity;
 
-            moves.sort((a, b) => (b.captured ? PIECE_VALUES[b.captured] : 0) - (a.captured ? PIECE_VALUES[a.captured] : 0));
+            for (const move of moves) {
+                game.move(move);
+                const score = isOldEngine 
+                    ? old_minimax(game, 2, -Infinity, Infinity, !isMaximizing)
+                    : new_minimax(game, 2, -Infinity, Infinity, !isMaximizing);
+                game.undo();
 
-            for (let depth = 1; depth <= 3; depth++) { // عمق 3 لسرعة المعركة
-                let depthBestMove = null;
-                let depthBestScore = isMaximizing ? -Infinity : Infinity;
-
-                for (const move of moves) {
-                    if (Date.now() - startTime > timeLimit * 0.8) break;
-
-                    game.move(move);
-                    const score = isOldEngine 
-                        ? old_minimax(game, depth - 1, -Infinity, Infinity, !isMaximizing, startTime, timeLimit)
-                        : new_minimax(game, depth - 1, -Infinity, Infinity, !isMaximizing, startTime, timeLimit);
-                    game.undo();
-
-                    if (isMaximizing) {
-                        if (score > depthBestScore) { depthBestScore = score; depthBestMove = move; }
-                    } else {
-                        if (score < depthBestScore) { depthBestScore = score; depthBestMove = move; }
-                    }
+                if (isMaximizing) {
+                    if (score > bestScore) { bestScore = score; bestMove = move; }
+                } else {
+                    if (score < bestScore) { bestScore = score; bestMove = move; }
                 }
-
-                if (depthBestMove) { bestMove = depthBestMove; bestScore = depthBestScore; }
-                if (Math.abs(bestScore) > 90000 || Date.now() - startTime > timeLimit * 0.8) break;
             }
             return bestMove || moves[0];
         }
@@ -250,17 +213,17 @@
             let move;
             
             if (turn === 'w') {
-                move = getBestMove(game, true, 1500); 
+                move = getBestMove(game, true);
                 log(`🤖 <strong style="color:#4ecca3">القديم (أبيض)</strong> لعب: ${move.san}`);
             } else {
-                move = getBestMove(game, false, 1500);
+                move = getBestMove(game, false);
                 log(`👁️ <strong style="color:#e94560">الجديد (أسود)</strong> لعب: ${move.san}`);
             }
             
             game.move(move);
             board.position(game.fen());
             
-            await new Promise(r => setTimeout(r, 400)); // سرعة المشاهدة
+            await new Promise(r => setTimeout(r, 500));
             makeMove();
         }
 
@@ -269,7 +232,7 @@
             document.getElementById('startBtn').disabled = false;
             let winner = '';
             if (game.in_checkmate()) {
-                winner = game.turn() === 'w' ? '👁️ الجديد (الأسود)' : '🤖 القديم (الأبيض)';
+                winner = game.turn() === 'w' ? '️ الجديد (الأسود)' : '🤖 القديم (الأبيض)';
                 if (game.turn() === 'w') newScore++; else oldScore++;
             } else if (game.in_draw()) {
                 winner = '🤝 تعادل';
@@ -292,10 +255,9 @@
             document.getElementById('startBtn').disabled = true;
             
             if (!board) {
-                // ✅ هنا الإصلاح: draggable: false يمنعك من التحريك يدوياً
                 board = Chessboard('board-container', { 
                     position: 'start', 
-                    draggable: false, 
+                    draggable: false,
                     pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' 
                 });
             } else {
