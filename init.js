@@ -6,11 +6,6 @@ var game = new Chess();
 var selectedSquare = null;
 var ayanokojiFirstMoveMade = false;
 
-// التأكد من وجود playerColor
-if (typeof playerColor === 'undefined') {
-    var playerColor = 'w';
-}
-
 var board = Chessboard('board-container', {
     draggable: true,
     position: 'start',
@@ -41,7 +36,7 @@ var board = Chessboard('board-container', {
         selectedSquare = null;
         
         if (!game.game_over()) {
-            setTimeout(makeAyanokojiMove, 400);
+            setTimeout(makeAyanokojiMove, 300);
         } else {
             updateCheckStatus();
         }
@@ -76,7 +71,7 @@ $(document).on('click', '.square-55d63', function(e) {
             selectedSquare = null;
             
             if (!game.game_over()) {
-                setTimeout(makeAyanokojiMove, 400);
+                setTimeout(makeAyanokojiMove, 300);
             } else {
                 updateCheckStatus();
             }
@@ -122,71 +117,35 @@ function removeMoveIndicators() {
     $('.square-55d63').removeClass('move-normal move-capture move-castle in-check in-checkmate');
 }
 
-// ====== دور أيانوكوجي (مصحح - يستخدم board.move) ======
+// ====== دور أيانوكوجي (التعديل الوحيد: إضافة Callback) ======
 function makeAyanokojiMove() {
     $('#ayanokoji-thinking').addClass('active');
     $('.ayanokoji-profile').addClass('thinking');
     
-    console.log('🤔 أيانوكوجي يفكر... FEN:', game.fen());
-    
-    getBestMove(game, 4000, function(bestMove) {
-        console.log('✅ الحركة المختارة:', bestMove);
-        
-        if (bestMove) {
-            // تنفيذ الحركة في محرك الشطرنج
-            const move = game.move(bestMove);
-            
-            if (move) {
-                console.log('🎯 الحركة نُفِّذت:', move.from, '->', move.to);
-                
-                // ✅ تحديث الرقعة باستخدام board.move() مباشرة
-                setTimeout(function() {
-                    board.move(move.from + move.to);
-                    console.log('🔄 الرقعة تم تحديثها');
-                }, 100);
-                
-                // تشغيل الأصوات
-                setTimeout(function() {
-                    if (typeof playMoveSound === 'function') playMoveSound();
-                    
-                    if (!ayanokojiFirstMoveMade) {
-                        ayanokojiFirstMoveMade = true;
-                        setTimeout(function() {
-                            if (typeof playAyanokojiVoice === 'function') playAyanokojiVoice();
-                        }, 300);
-                    }
-                }, 200);
-                
-                // التحقق من حالة اللعبة
-                setTimeout(function() {
-                    updateCheckStatus();
-                }, 500);
-                
-            } else {
-                console.error('❌ الحركة مرفوضة! محاولة إيجاد بديل...');
-                const legalMoves = game.moves({ verbose: true });
-                if (legalMoves.length > 0) {
-                    console.log('🔄 تنفيذ حركة بديلة:', legalMoves[0].san);
-                    game.move(legalMoves[0]);
-                    board.position(game.fen());
-                    if (typeof playMoveSound === 'function') playMoveSound();
-                    updateCheckStatus();
-                }
-            }
-        } else {
-            console.error('❌ لم يتم إرجاع أي حركة!');
-            const legalMoves = game.moves({ verbose: true });
-            if (legalMoves.length > 0) {
-                game.move(legalMoves[0]);
+    setTimeout(function() {
+        // نمرر دالة (callback) لاستلام الحركة عندما يجهز Stockfish
+        getBestMove(game, 4000, function(bestMove) {
+            if (bestMove) {
+                game.move(bestMove);
                 board.position(game.fen());
+                
                 if (typeof playMoveSound === 'function') playMoveSound();
+                
+                // ✅ تشغيل صوت أيانوكوجي عند أول حركة يقوم بها هو
+                if (!ayanokojiFirstMoveMade) {
+                    ayanokojiFirstMoveMade = true;
+                    setTimeout(function() {
+                        if (typeof playAyanokojiVoice === 'function') playAyanokojiVoice();
+                    }, 300);
+                }
+                
                 updateCheckStatus();
             }
-        }
-        
-        $('#ayanokoji-thinking').removeClass('active');
-        $('.ayanokoji-profile').removeClass('thinking');
-    });
+            
+            $('#ayanokoji-thinking').removeClass('active');
+            $('.ayanokoji-profile').removeClass('thinking');
+        });
+    }, 100);
 }
 
 // ====== التحقق من حالة اللعبة ======
@@ -200,7 +159,7 @@ function updateCheckStatus() {
         var result = (game.turn() === playerColor) ? 'loss' : 'win';
         
         setTimeout(function() {
-            if (typeof showEndScreen === 'function') showEndScreen(result);
+            showEndScreen(result);
         }, 500);
         
     } else if (game.in_check()) {
@@ -209,7 +168,7 @@ function updateCheckStatus() {
         
     } else if (game.in_draw()) {
         setTimeout(function() {
-            if (typeof showEndScreen === 'function') showEndScreen('draw');
+            showEndScreen('draw');
         }, 500);
     }
 }
