@@ -29,7 +29,7 @@
 
     <div id="board-container"></div>
     <br>
-    <button id="startBtn" onclick="startBattle()">🚀 ابدأ المعركة</button>
+    <button id="startBtn" onclick="startBattle()">🚀 ابدأ المعركة التلقائية</button>
     <button onclick="resetStats()">🔄 تصفير النتائج</button>
 
     <div id="log"></div>
@@ -41,11 +41,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
 
     <script>
-        // ==========================================
-        // 1. المحرك القديم (كما أرسلته بالضبط)
-        // ==========================================
-        const OLD_PIECE_VALUES = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
-        const OLD_PST = { /* نفس الجداول التي أرسلتها */
+        const PIECE_VALUES = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
+        const PST = {
             p: [[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[0,0,0,20,20,0,0,0],[5,-5,-10,0,0,-10,-5,5],[5,10,10,-20,-20,10,10,5],[0,0,0,0,0,0,0,0]],
             n: [[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,0,0,0,0,-20,-40],[-30,0,10,15,15,10,0,-30],[-30,5,15,20,20,15,5,-30],[-30,0,15,20,20,15,0,-30],[-30,5,10,15,15,10,5,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],
             b: [[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[-10,5,5,10,10,5,5,-10],[-10,0,10,10,10,10,0,-10],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],
@@ -54,6 +51,7 @@
             k: [[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-20,-30,-30,-40,-40,-30,-30,-20],[-10,-20,-20,-20,-20,-20,-20,-10],[20,20,0,0,0,0,20,20],[20,30,10,0,0,10,30,20]]
         };
 
+        // --- المحرك القديم ---
         function old_evaluatePosition(game) {
             if (game.in_checkmate()) return game.turn() === 'w' ? -99999 : 99999;
             if (game.in_draw()) return 0;
@@ -63,11 +61,10 @@
                 for (let j = 0; j < 8; j++) {
                     const piece = board[i][j];
                     if (!piece) continue;
-                    const pstValue = piece.color === 'w' ? OLD_PST[piece.type][i][j] : OLD_PST[piece.type][7 - i][j];
-                    score += piece.color === 'w' ? (OLD_PIECE_VALUES[piece.type] + pstValue) : -(OLD_PIECE_VALUES[piece.type] + pstValue);
+                    const pstValue = piece.color === 'w' ? PST[piece.type][i][j] : PST[piece.type][7 - i][j];
+                    score += piece.color === 'w' ? (PIECE_VALUES[piece.type] + pstValue) : -(PIECE_VALUES[piece.type] + pstValue);
                 }
             }
-            // مكافأة المركز
             [[3,3],[3,4],[4,3],[4,4]].forEach(([r, c]) => {
                 const p = board[r][c];
                 if (p) score += p.color === 'w' ? (p.type === 'p' ? 10 : 15) : -(p.type === 'p' ? 10 : 15);
@@ -80,7 +77,7 @@
             if (isMaximizing) { if (standPat >= beta) return beta; if (alpha < standPat) alpha = standPat; } 
             else { if (standPat <= alpha) return alpha; if (beta > standPat) beta = standPat; }
             const moves = game.moves({ verbose: true }).filter(m => m.captured || m.promotion);
-            moves.sort((a, b) => ((OLD_PIECE_VALUES[b.captured]||0)*10 - OLD_PIECE_VALUES[b.piece]) - ((OLD_PIECE_VALUES[a.captured]||0)*10 - OLD_PIECE_VALUES[a.piece]));
+            moves.sort((a, b) => ((PIECE_VALUES[b.captured]||0)*10 - PIECE_VALUES[b.piece]) - ((PIECE_VALUES[a.captured]||0)*10 - PIECE_VALUES[a.piece]));
             for (const move of moves) {
                 game.move(move);
                 const score = old_quiesce(game, alpha, beta, !isMaximizing);
@@ -98,8 +95,8 @@
 
             const moves = game.moves({ verbose: true });
             moves.sort((a, b) => {
-                let sA = (a.captured ? OLD_PIECE_VALUES[a.captured]*10 - OLD_PIECE_VALUES[a.piece] : 0) + (a.promotion ? 900 : 0);
-                let sB = (b.captured ? OLD_PIECE_VALUES[b.captured]*10 - OLD_PIECE_VALUES[b.piece] : 0) + (b.promotion ? 900 : 0);
+                let sA = (a.captured ? PIECE_VALUES[a.captured]*10 - PIECE_VALUES[a.piece] : 0) + (a.promotion ? 900 : 0);
+                let sB = (b.captured ? PIECE_VALUES[b.captured]*10 - PIECE_VALUES[b.piece] : 0) + (b.promotion ? 900 : 0);
                 return sB - sA;
             });
 
@@ -128,66 +125,27 @@
             }
         }
 
-        function old_getBestMove(game, timeLimit = 3000) {
-            const moves = game.moves({ verbose: true });
-            if (moves.length === 0) return null;
-            if (moves.length === 1) return moves[0];
-            const startTime = Date.now();
-            let bestMove = null, bestScore = 0;
-            const isMaximizing = game.turn() === 'w';
-            moves.sort((a, b) => (b.captured ? OLD_PIECE_VALUES[b.captured] : 0) - (a.captured ? OLD_PIECE_VALUES[a.captured] : 0));
-
-            for (let depth = 1; depth <= 4; depth++) { // عمق 4 للسرعة في المتصفح
-                let depthBestMove = null, depthBestScore = isMaximizing ? -Infinity : Infinity;
-                for (const move of moves) {
-                    if (Date.now() - startTime > timeLimit * 0.8) break;
-                    game.move(move);
-                    const score = old_minimax(game, depth - 1, -Infinity, Infinity, !isMaximizing, startTime, timeLimit);
-                    game.undo();
-                    if (isMaximizing) { if (score > depthBestScore) { depthBestScore = score; depthBestMove = move; } }
-                    else { if (score < depthBestScore) { depthBestScore = score; depthBestMove = move; } }
-                }
-                if (depthBestMove) { bestMove = depthBestMove; bestScore = depthBestScore; }
-                if (Math.abs(bestScore) > 90000 || Date.now() - startTime > timeLimit * 0.8) break;
-            }
-            return bestMove || moves[0];
-        }
-
-        // ==========================================
-        // 2. المحرك الجديد (أيانوكوجي: عدواني + يكره التعادل)
-        // ==========================================
+        // --- المحرك الجديد (أيانوكوجي) ---
         function new_evaluatePosition(game) {
-            // نبدأ بالتقييم الأساسي العادل
-            let score = old_evaluatePosition(game);
+            let score = old_evaluatePosition(game); // نبدأ بالأساس
             
-            // 1. كره التعادل (Contempt): أيانوكوجي يرفض التعادل بشدة
-            if (game.in_draw() || game.history().length > 60) {
-                score += (game.turn() === 'w' ? -300 : 300); // يعاقب نفسه ليبحث عن الفوز
+            // 1. كره التعادل
+            if (game.in_draw() || game.history().length > 50) {
+                score += (game.turn() === 'w' ? -300 : 300); 
             }
-
-            // 2. العدوانية: مكافأة ضخمة إذا كان الخصم في وضع كش
+            // 2. العدوانية ومكافأة الكش
             if (game.in_check()) {
                 score += (game.turn() === 'w' ? 400 : -400);
             }
-
-            // 3. التضحية الهجومية: تقليل قيمة القطع الخاصة قليلاً لزيادة قيمة "الهجوم"
-            // هذا يجعله مستعداً للتضحية ببيدق أو قطعة صغيرة لفتح خطوط الملك
-            const myPieces = game.board().flat().filter(p => p && p.color === game.turn()).length;
-            const enemyPieces = game.board().flat().filter(p => p && p.color !== game.turn()).length;
-            if (myPieces < enemyPieces && game.in_check()) {
-                score += (game.turn() === 'w' ? 500 : -500); // مكافأة التضحية الناجحة
-            }
-
             return score;
         }
 
-        // نستخدم نفس دوال البحث القوية (Quiesce, Minimax) لكن مع دالة التقييم الجديدة
         function new_quiesce(game, alpha, beta, isMaximizing) {
             const standPat = new_evaluatePosition(game);
             if (isMaximizing) { if (standPat >= beta) return beta; if (alpha < standPat) alpha = standPat; } 
             else { if (standPat <= alpha) return alpha; if (beta > standPat) beta = standPat; }
             const moves = game.moves({ verbose: true }).filter(m => m.captured || m.promotion);
-            moves.sort((a, b) => ((OLD_PIECE_VALUES[b.captured]||0)*10 - OLD_PIECE_VALUES[b.piece]) - ((OLD_PIECE_VALUES[a.captured]||0)*10 - OLD_PIECE_VALUES[a.piece]));
+            moves.sort((a, b) => ((PIECE_VALUES[b.captured]||0)*10 - PIECE_VALUES[b.piece]) - ((PIECE_VALUES[a.captured]||0)*10 - PIECE_VALUES[a.piece]));
             for (const move of moves) {
                 game.move(move);
                 const score = new_quiesce(game, alpha, beta, !isMaximizing);
@@ -205,8 +163,8 @@
 
             const moves = game.moves({ verbose: true });
             moves.sort((a, b) => {
-                let sA = (a.captured ? OLD_PIECE_VALUES[a.captured]*10 - OLD_PIECE_VALUES[a.piece] : 0) + (a.promotion ? 900 : 0);
-                let sB = (b.captured ? OLD_PIECE_VALUES[b.captured]*10 - OLD_PIECE_VALUES[b.piece] : 0) + (b.promotion ? 900 : 0);
+                let sA = (a.captured ? PIECE_VALUES[a.captured]*10 - PIECE_VALUES[a.piece] : 0) + (a.promotion ? 900 : 0);
+                let sB = (b.captured ? PIECE_VALUES[b.captured]*10 - PIECE_VALUES[b.piece] : 0) + (b.promotion ? 900 : 0);
                 return sB - sA;
             });
 
@@ -235,34 +193,46 @@
             }
         }
 
-        function new_getBestMove(game, timeLimit = 3000) {
+        // --- دالة اختيار الحركة الموحدة والمصححة (تمنع تدخل اللاعب) ---
+        function getBestMove(game, isOldEngine, timeLimit = 2000) {
             const moves = game.moves({ verbose: true });
             if (moves.length === 0) return null;
             if (moves.length === 1) return moves[0];
-            const startTime = Date.now();
-            let bestMove = null, bestScore = 0;
-            const isMaximizing = game.turn() === 'w';
-            moves.sort((a, b) => (b.captured ? OLD_PIECE_VALUES[b.captured] : 0) - (a.captured ? OLD_PIECE_VALUES[a.captured] : 0));
 
-            for (let depth = 1; depth <= 4; depth++) {
-                let depthBestMove = null, depthBestScore = isMaximizing ? -Infinity : Infinity;
+            const startTime = Date.now();
+            let bestMove = null;
+            const isMaximizing = game.turn() === 'w';
+            let bestScore = isMaximizing ? -Infinity : Infinity;
+
+            moves.sort((a, b) => (b.captured ? PIECE_VALUES[b.captured] : 0) - (a.captured ? PIECE_VALUES[a.captured] : 0));
+
+            for (let depth = 1; depth <= 3; depth++) { // عمق 3 لسرعة المعركة
+                let depthBestMove = null;
+                let depthBestScore = isMaximizing ? -Infinity : Infinity;
+
                 for (const move of moves) {
                     if (Date.now() - startTime > timeLimit * 0.8) break;
+
                     game.move(move);
-                    const score = new_minimax(game, depth - 1, -Infinity, Infinity, !isMaximizing, startTime, timeLimit);
+                    const score = isOldEngine 
+                        ? old_minimax(game, depth - 1, -Infinity, Infinity, !isMaximizing, startTime, timeLimit)
+                        : new_minimax(game, depth - 1, -Infinity, Infinity, !isMaximizing, startTime, timeLimit);
                     game.undo();
-                    if (isMaximizing) { if (score > depthBestScore) { depthBestScore = score; depthBestMove = move; } }
-                    else { if (score < depthBestScore) { depthBestScore = score; depthBestMove = move; } }
+
+                    if (isMaximizing) {
+                        if (score > depthBestScore) { depthBestScore = score; depthBestMove = move; }
+                    } else {
+                        if (score < depthBestScore) { depthBestScore = score; depthBestMove = move; }
+                    }
                 }
+
                 if (depthBestMove) { bestMove = depthBestMove; bestScore = depthBestScore; }
                 if (Math.abs(bestScore) > 90000 || Date.now() - startTime > timeLimit * 0.8) break;
             }
             return bestMove || moves[0];
         }
 
-        // ==========================================
-        // 3. إدارة المعركة
-        // ==========================================
+        // --- إدارة المعركة ---
         let game = new Chess();
         let board = null;
         let oldScore = 0, newScore = 0, round = 1;
@@ -280,17 +250,17 @@
             let move;
             
             if (turn === 'w') {
-                move = old_getBestMove(game, 2000); // 2 ثانية تسريع للمعركة
+                move = getBestMove(game, true, 1500); 
                 log(`🤖 <strong style="color:#4ecca3">القديم (أبيض)</strong> لعب: ${move.san}`);
             } else {
-                move = new_getBestMove(game, 2000);
+                move = getBestMove(game, false, 1500);
                 log(`👁️ <strong style="color:#e94560">الجديد (أسود)</strong> لعب: ${move.san}`);
             }
             
             game.move(move);
             board.position(game.fen());
             
-            await new Promise(r => setTimeout(r, 300)); // سرعة المشاهدة
+            await new Promise(r => setTimeout(r, 400)); // سرعة المشاهدة
             makeMove();
         }
 
@@ -322,7 +292,12 @@
             document.getElementById('startBtn').disabled = true;
             
             if (!board) {
-                board = Chessboard('board-container', { position: 'start', pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' });
+                // ✅ هنا الإصلاح: draggable: false يمنعك من التحريك يدوياً
+                board = Chessboard('board-container', { 
+                    position: 'start', 
+                    draggable: false, 
+                    pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' 
+                });
             } else {
                 board.start();
             }
@@ -340,8 +315,8 @@
         }
 
         $(document).ready(() => {
-            board = Chessboard('board-container', { position: 'start', pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' });
-            log('جاهز للمعركة! اضغط "ابدأ المعركة"');
+            board = Chessboard('board-container', { position: 'start', draggable: false, pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' });
+            log('جاهز للمعركة! اضغط "ابدأ المعركة التلقائية"');
         });
     </script>
 </body>
