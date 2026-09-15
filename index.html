@@ -1,172 +1,106 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Chess: أنت ضد ستوك فيش</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: white;
-            text-align: center;
-            padding: 20px;
-            margin: 0;
-        }
-        h1 { color: #e94560; text-shadow: 0 0 15px rgba(233, 69, 96, 0.6); }
-        #board-container { 
-            width: 400px; 
-            margin: 20px auto; 
-            border: 3px solid #e94560; 
-            border-radius: 8px; 
-            overflow: hidden; 
-        }
-        #status {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px auto;
-            max-width: 400px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        button {
-            background: #e94560;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 10px;
-            transition: 0.3s;
-        }
-        button:hover { background: #ff6b6b; transform: scale(1.05); }
-    </style>
+    <title>Elite Chess ✧</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    
+    <!-- ملفات التنسيق -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+    <link rel="stylesheet" href="move-indicators.css">
+    <link rel="stylesheet" href="ayanokoji-profile.css">
+    <link rel="stylesheet" href="start-end-screens.css">
 </head>
 <body>
 
-    <h1>♟️ Elite Chess: تحدي ستوك فيش 👁️</h1>
-    <div id="status">دورك: الأبيض (ابدأ اللعب)</div>
-    
-    <div id="board-container"></div>
-    
-    <button onclick="resetGame()">🔄 لعبة جديدة</button>
+    <!-- ✅ الخلفية المتحركة (تظهر دائماً) -->
+    <video id="bg-video" autoplay muted loop playsinline preload="auto">
+        <source id="video-source" src="" type="video/mp4">
+    </video>
 
-    <!-- المكتبات الأساسية -->
+    <div class="glass-overlay"></div>
+
+    <!-- ✅ موسيقى الخلفية (بدون autoplay لتجنب حظر المتصفح، سيتم تشغيلها بالكود) -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="bg-music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- ✅ صوت أيانوكوجي -->
+    <audio id="ayanokoji-voice" preload="auto">
+        <source src="ayanokoji-voice.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- شاشة البداية -->
+    <div id="start-screen" class="start-screen">
+        <div class="start-pawn" id="start-pawn"></div>
+    </div>
+
+    <!-- شاشة اختيار اللون -->
+    <div id="color-selection" class="color-selection" style="display: none;">
+        <div class="color-option white-option" id="white-option">
+            <div class="option-pawn white-pawn"></div>
+            <span class="option-text">اللون الأبيض</span>
+        </div>
+        <div class="color-option black-option" id="black-option">
+            <div class="option-pawn black-pawn"></div>
+            <span class="option-text">اللون الأسود</span>
+        </div>
+    </div>
+
+    <!-- بروفايل أيانوكوجي -->
+    <div class="ayanokoji-profile" id="ayanokoji-profile" style="display: none;">
+        <div class="profile-image-container">
+            <div class="profile-image">
+                <img src="ayanokoji.png" alt="Ayanokoji" 
+                     onerror="this.src='https://via.placeholder.com/120x120/1a1a1a/ffffff?text=Ayanokoji'">
+            </div>
+        </div>
+        
+        <!-- مؤشر الصوت المتحرك (الخطوط العمودية) -->
+        <div class="voice-indicator" id="voice-indicator">
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+        </div>
+        
+        <div class="profile-info">
+            <h3 class="profile-name">Ayanokoji Kiyotaka</h3>
+            <p class="profile-elo">ELO: 2000+</p>
+            <p class="profile-quote">سيتساهل معك<br>وقد يتركك تفوز</p>
+        </div>
+        
+        <!-- مؤشر التفكير (النقاط) -->
+        <div class="thinking-indicator" id="ayanokoji-thinking">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </div>
+
+    <!-- حاوية رقعة الشطرنج -->
+    <div id="board-container" style="display: none;"></div>
+
+    <!-- شاشة النهاية -->
+    <div id="end-screen" class="end-screen" style="display: none;">
+        <div class="end-content">
+            <div class="end-pawn" id="end-pawn"></div>
+            <h2 class="end-title" id="end-title"></h2>
+            <p class="end-quote" id="end-quote"></p>
+        </div>
+    </div>
+
+    <!-- ملفات الجافاسكريبت (بالترتيب الصحيح) -->
+    <script src="script.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
-
-    <script>
-        // 1. إعداد اللعبة واللوحة
-        let game = new Chess();
-        let board = null;
-        let stockfish = new Worker('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js');
-
-        // 2. إعداد ستوك فيش (مستوى قوي جداً)
-        stockfish.postMessage('uci');
-        stockfish.postMessage('setoption name Skill Level value 20'); // أقصى قوة
-        stockfish.postMessage('isready');
-
-        // 3. دالة التحقق من الحركة ومنع الحركات الخاطئة
-        function onDragStart(source, piece, position, orientation) {
-            // لا تسمح بتحريك القطع إذا انتهت اللعبة
-            if (game.game_over()) return false;
-            // اسمح فقط بتحريك القطع البيضاء
-            if (piece.search(/^b/) !== -1) return false;
-        }
-
-        function onDrop(source, target) {
-            // حاول تنفيذ الحركة
-            let move = game.move({
-                from: source,
-                to: target,
-                promotion: 'q' // ترقية تلقائية للوزير للتبسيط
-            });
-
-            // إذا كانت الحركة غير قانونية، أعد القطعة لمكانها
-            if (move === null) return 'snapback';
-
-            updateStatus();
-            
-            // دور ستوك فيش بعد تأخير بسيط ليبدو طبيعياً
-            window.setTimeout(makeStockfishMove, 500);
-        }
-
-        // إصلاح اللوحة بعد الحركات الخاصة (مثل التبييت أو الترقية)
-        function onSnapEnd() {
-            board.position(game.fen());
-        }
-
-        // 4. دالة حركة ستوك فيش
-        function makeStockfishMove() {
-            if (game.game_over()) return;
-
-            document.getElementById('status').innerText = "👁️ ستوك فيش يفكر...";
-            
-            // إرسال وضعية اللعبة الحالية لستوك فيش
-            stockfish.postMessage('position fen ' + game.fen());
-            // طلب أفضل حركة (عمق 15 سريع وقوي جداً للمتصفح)
-            stockfish.postMessage('go depth 15');
-
-            // الاستماع لرد ستوك فيش
-            stockfish.onmessage = function(event) {
-                if (event.data.startsWith('bestmove')) {
-                    const bestMove = event.data.split(' ')[1];
-                    if (bestMove && bestMove !== '(none)') {
-                        const from = bestMove.substring(0, 2);
-                        const to = bestMove.substring(2, 4);
-                        const promotion = bestMove.length > 4 ? bestMove.substring(4, 5) : 'q';
-
-                        // تنفيذ حركة ستوك فيش على اللعبة
-                        game.move({ from: from, to: to, promotion: promotion });
-                        // تحديث اللوحة
-                        board.position(game.fen());
-                        updateStatus();
-                    }
-                }
-            };
-        }
-
-        // 5. تحديث حالة اللعبة (كش مات، تعادل، إلخ)
-        function updateStatus() {
-            let status = '';
-            let moveColor = game.turn() === 'w' ? 'الأبيض (دورك)' : 'الأسود (دور ستوك فيش)';
-
-            if (game.in_checkmate()) {
-                status = 'انتهت اللعبة، ' + (game.turn() === 'w' ? 'ستوك فيش فاز!' : 'أنت فزت! 🎉');
-            } else if (game.in_draw()) {
-                status = 'انتهت اللعبة بالتعادل.';
-            } else {
-                status = 'دور: ' + moveColor;
-                if (game.in_check()) {
-                    status += ' (كش! ⚠️)';
-                }
-            }
-            document.getElementById('status').innerText = status;
-        }
-
-        // 6. بدء اللعبة
-        function resetGame() {
-            game.reset();
-            board.start();
-            updateStatus();
-        }
-
-        // تهيئة اللوحة عند تحميل الصفحة
-        $(document).ready(function() {
-            board = Chessboard('board-container', {
-                draggable: true,
-                position: 'start',
-                onDragStart: onDragStart,
-                onDrop: onDrop,
-                onSnapEnd: onSnapEnd,
-                pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' // تأكد من وجود مجلد الصور هذا
-            });
-            updateStatus();
-        });
-    </script>
+    <script src="js/chess.js"></script>
+    <script src="js/chessboard-1.0.0.js"></script>
+    <script src="ayanokoji-ai.js"></script>
+    <script src="sounds.js"></script>
+    <script src="init.js"></script>
+    <script src="start-end.js"></script>
 </body>
 </html>
