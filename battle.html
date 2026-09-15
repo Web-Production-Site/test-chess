@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معركة العقول: القديم vs الجديد</title>
+    <title>معركة العقول التلقائية</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: white; text-align: center; padding: 20px; margin: 0; }
         h1 { color: #e94560; text-shadow: 0 0 15px rgba(233, 69, 96, 0.6); }
@@ -18,13 +18,13 @@
     </style>
 </head>
 <body>
-    <h1>⚔️ معركة العقول: القديم vs الجديد ⚔️</h1>
-    <p>الروبوت يتحكم بالأبيض والأسود - أنت مجرد مشاهد </p>
+    <h1>️ معركة العقول التلقائية ️</h1>
+    <p>🔒 اللوحة مقفولة - الروبوت يلعب تلقائياً</p>
     
     <div class="stats">
         <div class="stat-item">🤖 <strong>القديم (أبيض):</strong> <span id="old-score">0</span></div>
         <div class="stat-item">🎯 <strong>الجولة:</strong> <span id="round">1</span></div>
-        <div class="stat-item">️ <strong>الجديد (أسود):</strong> <span id="new-score">0</span></div>
+        <div class="stat-item">👁️ <strong>الجديد (أسود):</strong> <span id="new-score">0</span></div>
     </div>
 
     <div id="board-container"></div>
@@ -67,23 +67,8 @@
             return score;
         }
 
-        function old_quiesce(game, alpha, beta, isMaximizing) {
-            const standPat = old_evaluatePosition(game);
-            if (isMaximizing) { if (standPat >= beta) return beta; if (alpha < standPat) alpha = standPat; } 
-            else { if (standPat <= alpha) return alpha; if (beta > standPat) beta = standPat; }
-            const moves = game.moves({ verbose: true }).filter(m => m.captured || m.promotion);
-            for (const move of moves) {
-                game.move(move);
-                const score = old_quiesce(game, alpha, beta, !isMaximizing);
-                game.undo();
-                if (isMaximizing) { if (score >= beta) return beta; if (score > alpha) alpha = score; }
-                else { if (score <= alpha) return alpha; if (score < beta) beta = score; }
-            }
-            return isMaximizing ? alpha : beta;
-        }
-
         function old_minimax(game, depth, alpha, beta, isMaximizing) {
-            if (depth === 0) return old_quiesce(game, alpha, beta, isMaximizing);
+            if (depth === 0) return old_evaluatePosition(game);
             if (game.game_over()) return game.in_checkmate() ? (isMaximizing ? -99999 : 99999) : 0;
 
             const moves = game.moves({ verbose: true });
@@ -124,23 +109,8 @@
             return score;
         }
 
-        function new_quiesce(game, alpha, beta, isMaximizing) {
-            const standPat = new_evaluatePosition(game);
-            if (isMaximizing) { if (standPat >= beta) return beta; if (alpha < standPat) alpha = standPat; } 
-            else { if (standPat <= alpha) return alpha; if (beta > standPat) beta = standPat; }
-            const moves = game.moves({ verbose: true }).filter(m => m.captured || m.promotion);
-            for (const move of moves) {
-                game.move(move);
-                const score = new_quiesce(game, alpha, beta, !isMaximizing);
-                game.undo();
-                if (isMaximizing) { if (score >= beta) return beta; if (score > alpha) alpha = score; }
-                else { if (score <= alpha) return alpha; if (score < beta) beta = score; }
-            }
-            return isMaximizing ? alpha : beta;
-        }
-
         function new_minimax(game, depth, alpha, beta, isMaximizing) {
-            if (depth === 0) return new_quiesce(game, alpha, beta, isMaximizing);
+            if (depth === 0) return new_evaluatePosition(game);
             if (game.game_over()) return game.in_checkmate() ? (isMaximizing ? -99999 : 99999) : 0;
 
             const moves = game.moves({ verbose: true });
@@ -169,7 +139,7 @@
             }
         }
 
-        // --- دالة اختيار الحركة (للأبيض والأسود) ---
+        // --- دالة اختيار الحركة ---
         function getBestMove(game, isOldEngine) {
             const moves = game.moves({ verbose: true });
             if (moves.length === 0) return null;
@@ -206,8 +176,12 @@
             div.innerHTML = `<div style="margin-bottom:5px; border-bottom:1px solid #333; padding-bottom:5px;">${msg}</div>` + div.innerHTML;
         }
 
-        async function makeMove() {
-            if (game.game_over() || !isRunning) { endGame(); return; }
+        function makeMove() {
+            if (!isRunning) return;
+            if (game.game_over()) { 
+                endGame(); 
+                return; 
+            }
             
             const turn = game.turn();
             let move;
@@ -220,11 +194,13 @@
                 log(`👁️ <strong style="color:#e94560">الجديد (أسود)</strong> لعب: ${move.san}`);
             }
             
-            game.move(move);
-            board.position(game.fen());
-            
-            await new Promise(r => setTimeout(r, 500));
-            makeMove();
+            if (move) {
+                game.move(move);
+                board.position(game.fen());
+                
+                // استدعاء الحركة التالية بعد 600 مللي ثانية
+                setTimeout(makeMove, 600);
+            }
         }
 
         function endGame() {
@@ -232,7 +208,7 @@
             document.getElementById('startBtn').disabled = false;
             let winner = '';
             if (game.in_checkmate()) {
-                winner = game.turn() === 'w' ? '️ الجديد (الأسود)' : '🤖 القديم (الأبيض)';
+                winner = game.turn() === 'w' ? '👁️ الجديد (الأسود)' : '🤖 القديم (الأبيض)';
                 if (game.turn() === 'w') newScore++; else oldScore++;
             } else if (game.in_draw()) {
                 winner = '🤝 تعادل';
@@ -245,7 +221,7 @@
                 if (confirm(`انتهت الجولة! الفائز: ${winner}\nهل تريد بدء الجولة التالية؟`)) {
                     startBattle();
                 }
-            }, 500);
+            }, 1000);
         }
 
         function startBattle() {
@@ -253,18 +229,23 @@
             game.reset();
             isRunning = true;
             document.getElementById('startBtn').disabled = true;
+            round++;
+            document.getElementById('round').textContent = round;
             
             if (!board) {
                 board = Chessboard('board-container', { 
                     position: 'start', 
                     draggable: false,
+                    onDragStart: function() { return false; }, // ✅ يمنع السحب تماماً
                     pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' 
                 });
             } else {
                 board.start();
             }
             log(`<br>--- 🚀 بداية الجولة ${round} ---`);
-            makeMove();
+            
+            // بدء المعركة بعد 500 مللي ثانية
+            setTimeout(makeMove, 500);
         }
 
         function resetStats() {
@@ -277,8 +258,13 @@
         }
 
         $(document).ready(() => {
-            board = Chessboard('board-container', { position: 'start', draggable: false, pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' });
-            log('جاهز للمعركة! اضغط "ابدأ المعركة التلقائية"');
+            board = Chessboard('board-container', { 
+                position: 'start', 
+                draggable: false,
+                onDragStart: function() { return false; }, // ✅ يمنع السحب تماماً
+                pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' 
+            });
+            log('🔒 اللوحة مقفولة - اضغط "ابدأ المعركة التلقائية"');
         });
     </script>
 </body>
