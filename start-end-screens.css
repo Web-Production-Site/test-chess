@@ -1,0 +1,278 @@
+/* ========================================
+   شاشة البداية
+   ======================================== */
+
+.start-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    cursor: pointer;
+    transition: opacity 0.5s ease;
+}
+
+.start-pawn {
+    width: 5cm;
+    height: 5cm;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+    animation: float 3s ease-in-out infinite;
+    transition: transform 0.3s ease;
+}
+
+.start-pawn:hover {
+    transform: scale(1.1);
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+/* ========================================
+   شاشة اختيار اللون
+   ======================================== */
+
+.color-selection {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 30px;
+    z-index: 999;
+    animation: fadeIn 0.5s ease;
+}
+
+.color-option {
+    width: 25vw;
+    height: 35vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 3px solid;
+}
+
+.white-option {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.white-option:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(255, 255, 255, 0.3);
+}
+
+.black-option {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.6);
+}
+
+.black-option:hover {
+    background: rgba(0, 0, 0, 0.25);
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.option-pawn {
+    width: 80px;
+    height: 80px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+}
+
+.white-pawn {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="%23fff" stroke="%23000" stroke-width="1.5"/></svg>');
+}
+
+.black-pawn {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="%23000" stroke="%23fff" stroke-width="1.5"/></svg>');
+}
+
+.option-text {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+.white-option .option-text {
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.black-option .option-text {
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ========================================
+   شاشة النهاية
+   ======================================== */
+
+.end-screen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px;
+    height: 480px;
+    z-index: 1001;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.8s ease;
+}
+
+.end-content {
+    width: 100%;
+    height: 100%;
+    background: rgba(20, 20, 30, 0.85);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.end-content:hover {
+    transform: scale(1.02);
+}
+
+.end-pawn {
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.5));
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+.end-title {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 25px;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+    letter-spacing: 2px;
+}
+
+.end-quote {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-size: 16px;
+    line-height: 2;
+    color: rgba(255, 255, 255, 0.85);
+    font-style: italic;
+    max-width: 90%;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 25px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+/* ألوان الشاشات المختلفة */
+.end-screen.win .end-content {
+    background: rgba(30, 60, 30, 0.85);
+    border-color: rgba(100, 255, 100, 0.3);
+}
+
+.end-screen.win .end-title {
+    color: rgba(150, 255, 150, 0.95);
+}
+
+.end-screen.win .end-pawn {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="%23fff" stroke="%2390EE90" stroke-width="1.5"/></svg>');
+}
+
+.end-screen.draw .end-content {
+    background: rgba(60, 50, 30, 0.85);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.end-screen.draw .end-title {
+    color: rgba(255, 215, 0, 0.95);
+}
+
+.end-screen.draw .end-pawn {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="%23FFD700" stroke="%23FFD700" stroke-width="1.5"/></svg>');
+}
+
+.end-screen.loss .end-content {
+    background: rgba(60, 30, 30, 0.85);
+    border-color: rgba(255, 100, 100, 0.3);
+}
+
+.end-screen.loss .end-title {
+    color: rgba(255, 150, 150, 0.95);
+}
+
+.end-screen.loss .end-pawn {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="%23000" stroke="%23FF6B6B" stroke-width="1.5"/></svg>');
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* للتابلت والجوال */
+@media (max-width: 768px) {
+    .color-selection {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .color-option {
+        width: 70vw;
+        height: 25vh;
+    }
+    
+    .end-screen {
+        width: 90vw;
+        height: 90vw;
+        max-width: 400px;
+        max-height: 400px;
+    }
+    
+    .end-content {
+        padding: 30px 20px;
+    }
+    
+    .end-title {
+        font-size: 22px;
+    }
+    
+    .end-quote {
+        font-size: 14px;
+    }
+}

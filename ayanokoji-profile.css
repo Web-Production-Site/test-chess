@@ -1,0 +1,283 @@
+/* ========================================
+   بروفايل أيانوكوجي الأنيق - زجاجي شفاف
+   ======================================== */
+
+.ayanokoji-profile {
+    position: fixed;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 25px;
+    padding: 30px 25px;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    z-index: 50;
+    transition: all 0.3s ease;
+}
+
+.ayanokoji-profile:hover {
+    transform: translateY(-50%) translateX(5px);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* حاوية الصورة */
+.profile-image-container {
+    width: 120px;
+    height: 120px;
+    position: relative;
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 0 25px rgba(255, 255, 255, 0.2),
+        inset 0 0 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.profile-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.15) 100%
+    );
+    z-index: 1;
+    pointer-events: none;
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(20%) contrast(1.1);
+    transition: all 0.3s ease;
+}
+
+.profile-image:hover img {
+    filter: grayscale(0%) contrast(1.2);
+    transform: scale(1.05);
+}
+
+/* ========================================
+   ✅ مؤشر الصوت المتحرك (Voice Indicator)
+   ======================================== */
+.voice-indicator {
+    display: none; /* مخفي افتراضياً */
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    width: 100%;
+    margin-top: -10px;
+}
+
+.voice-indicator.active {
+    display: flex; /* يظهر عند تشغيل الصوت */
+}
+
+.voice-bar {
+    width: 4px;
+    height: 10px;
+    background: linear-gradient(to top, rgba(100, 150, 255, 0.6), rgba(255, 255, 255, 0.9));
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(100, 150, 255, 0.5);
+    animation: voiceWave 0.8s ease-in-out infinite;
+}
+
+.voice-bar:nth-child(1) { animation-delay: 0s; }
+.voice-bar:nth-child(2) { animation-delay: 0.1s; }
+.voice-bar:nth-child(3) { animation-delay: 0.2s; }
+.voice-bar:nth-child(4) { animation-delay: 0.3s; }
+.voice-bar:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes voiceWave {
+    0%, 100% {
+        height: 10px;
+        opacity: 0.5;
+    }
+    50% {
+        height: 25px;
+        opacity: 1;
+    }
+}
+
+/* المعلومات */
+.profile-info {
+    text-align: center;
+    width: 100%;
+}
+
+.profile-name {
+    color: rgba(255, 255, 255, 0.95);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
+}
+
+.profile-elo {
+    color: rgba(255, 215, 0, 0.9);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 0 15px 0;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.profile-quote {
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-size: 13px;
+    line-height: 1.8;
+    margin: 0;
+    font-style: italic;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 15px;
+}
+
+/* مؤشر التفكير - النقاط المتحركة */
+.thinking-indicator {
+    display: none;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.thinking-indicator.active {
+    display: flex;
+}
+
+.thinking-indicator .dot {
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.thinking-indicator .dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.thinking-indicator .dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* تأثيرات إضافية */
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 
+            0 0 25px rgba(255, 255, 255, 0.2),
+            inset 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 0 35px rgba(255, 255, 255, 0.35),
+            inset 0 0 30px rgba(0, 0, 0, 0.4);
+    }
+}
+
+.ayanokoji-profile.thinking .profile-image {
+    animation: pulse-glow 2s infinite;
+}
+
+/* للتابلت والجوال */
+@media (max-width: 768px) {
+    .ayanokoji-profile {
+        left: 50%;
+        top: 20px;
+        transform: translateX(-50%);
+        width: 200px;
+        padding: 20px 15px;
+        flex-direction: row;
+        gap: 15px;
+    }
+    
+    .profile-image-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .voice-indicator {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 0;
+        height: 20px;
+    }
+    
+    .voice-bar {
+        width: 3px;
+        height: 8px;
+    }
+    
+    .profile-info {
+        text-align: right;
+        flex: 1;
+    }
+    
+    .profile-name {
+        font-size: 14px;
+        margin: 0 0 5px 0;
+    }
+    
+    .profile-elo {
+        font-size: 12px;
+        margin: 0 0 8px 0;
+    }
+    
+    .profile-quote {
+        font-size: 11px;
+        line-height: 1.6;
+        border-top: none;
+        padding-top: 0;
+    }
+    
+    .thinking-indicator {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 0;
+    }
+}

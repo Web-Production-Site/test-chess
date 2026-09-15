@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Chess ✧</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    
+    <!-- ملفات التنسيق -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+    <link rel="stylesheet" href="move-indicators.css">
+    <link rel="stylesheet" href="ayanokoji-profile.css">
+    <link rel="stylesheet" href="start-end-screens.css">
+</head>
+<body>
+
+    <!-- ✅ الخلفية المتحركة (تظهر دائماً) -->
+    <video id="bg-video" autoplay muted loop playsinline preload="auto">
+        <source id="video-source" src="" type="video/mp4">
+    </video>
+
+    <div class="glass-overlay"></div>
+
+    <!-- ✅ موسيقى الخلفية (بدون autoplay لتجنب حظر المتصفح، سيتم تشغيلها بالكود) -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="bg-music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- ✅ صوت أيانوكوجي -->
+    <audio id="ayanokoji-voice" preload="auto">
+        <source src="ayanokoji-voice.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- شاشة البداية -->
+    <div id="start-screen" class="start-screen">
+        <div class="start-pawn" id="start-pawn"></div>
+    </div>
+
+    <!-- شاشة اختيار اللون -->
+    <div id="color-selection" class="color-selection" style="display: none;">
+        <div class="color-option white-option" id="white-option">
+            <div class="option-pawn white-pawn"></div>
+            <span class="option-text">اللون الأبيض</span>
+        </div>
+        <div class="color-option black-option" id="black-option">
+            <div class="option-pawn black-pawn"></div>
+            <span class="option-text">اللون الأسود</span>
+        </div>
+    </div>
+
+    <!-- بروفايل أيانوكوجي -->
+    <div class="ayanokoji-profile" id="ayanokoji-profile" style="display: none;">
+        <div class="profile-image-container">
+            <div class="profile-image">
+                <img src="ayanokoji.png" alt="Ayanokoji" 
+                     onerror="this.src='https://via.placeholder.com/120x120/1a1a1a/ffffff?text=Ayanokoji'">
+            </div>
+        </div>
+        
+        <!-- مؤشر الصوت المتحرك (الخطوط العمودية) -->
+        <div class="voice-indicator" id="voice-indicator">
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+            <span class="voice-bar"></span>
+        </div>
+        
+        <div class="profile-info">
+            <h3 class="profile-name">Ayanokoji Kiyotaka</h3>
+            <p class="profile-elo">ELO: 2000+</p>
+            <p class="profile-quote">سيتساهل معك<br>وقد يتركك تفوز</p>
+        </div>
+        
+        <!-- مؤشر التفكير (النقاط) -->
+        <div class="thinking-indicator" id="ayanokoji-thinking">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </div>
+
+    <!-- حاوية رقعة الشطرنج -->
+    <div id="board-container" style="display: none;"></div>
+
+    <!-- شاشة النهاية -->
+    <div id="end-screen" class="end-screen" style="display: none;">
+        <div class="end-content">
+            <div class="end-pawn" id="end-pawn"></div>
+            <h2 class="end-title" id="end-title"></h2>
+            <p class="end-quote" id="end-quote"></p>
+        </div>
+    </div>
+
+    <!-- ملفات الجافاسكريبت (بالترتيب الصحيح) -->
+    <script src="script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/chess.js"></script>
+    <script src="js/chessboard-1.0.0.js"></script>
+    <script src="ayanokoji-ai.js"></script>
+    <script src="sounds.js"></script>
+    <script src="init.js"></script>
+    <script src="start-end.js"></script>
+</body>
+</html>

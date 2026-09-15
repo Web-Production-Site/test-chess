@@ -1,0 +1,57 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: #000;
+}
+
+/* الخلفية المتحركة مع تحسين دقة الألوان */
+#bg-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    filter: saturate(1.2) contrast(1.1); /* زيادة تشبع الألوان والتباين */
+}
+
+/* طبقة تلوين سينمائية محسنة لدقة ألوان أعلى */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(ellipse at center, transparent 20%, rgba(0, 5, 20, 0.7) 100%),
+        linear-gradient(180deg, rgba(15, 20, 40, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* الطبقة الزجاجية اللامعة الشفافة مع ألوان أكثر دقة */
+.glass-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    background: 
+        linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 35%),
+        linear-gradient(315deg, rgba(200,220,255,0.03) 0%, transparent 35%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+        inset 0 0 120px rgba(255, 255, 255, 0.04),
+        0 0 0 1px rgba(0,0,0,0.95);
+    z-index: 2;
+}
