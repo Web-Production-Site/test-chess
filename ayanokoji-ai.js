@@ -1,59 +1,53 @@
 /* ==========================================
-   عقل أيانوكوجي - الآن باستخدام Stockfish الحقيقي
-   المستوى: 20 (أقصى قوة) + كراهية للتعادل
+   عقل أيانوكوجي - Stockfish حقيقي
+   المستوى: 20 + كراهية للتعادل
    ========================================== */
 
-// إنشاء Worker لـ Stockfish
-const stockfishWorker = new Worker('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js');
+const stockfish = new Worker('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js');
 
-// إعداد Stockfish
-stockfishWorker.postMessage('uci');
-stockfishWorker.postMessage('setoption name Skill Level value 20');
-stockfishWorker.postMessage('setoption name Contempt value 50'); // يكره التعادل
-stockfishWorker.postMessage('isready');
+stockfish.postMessage('uci');
+stockfish.postMessage('setoption name Skill Level value 20');
+stockfish.postMessage('setoption name Contempt value 50');
+stockfish.postMessage('isready');
 
-let stockfishReady = false;
-let stockfishCallback = null;
+let isStockfishReady = false;
 
-// الاستماع لردود Stockfish
-stockfishWorker.onmessage = function(event) {
-    const message = event.data;
-    
-    if (message === 'readyok') {
-        stockfishReady = true;
-    }
-    
-    if (message.startsWith('bestmove')) {
-        const bestMove = message.split(' ')[1];
-        if (stockfishCallback && bestMove && bestMove !== '(none)') {
-            const from = bestMove.substring(0, 2);
-            const to = bestMove.substring(2, 4);
-            const promotion = bestMove.length > 4 ? bestMove.substring(4, 5) : undefined;
-            
-            stockfishCallback({
-                from: from,
-                to: to,
-                promotion: promotion
-            });
-            stockfishCallback = null;
-        }
+stockfish.onmessage = function(event) {
+    if (event.data === 'readyok') {
+        isStockfishReady = true;
     }
 };
 
-// الدالة الرئيسية التي يستدعيها init.js
-function getBestMove(game, callback) {
-    if (!stockfishReady) {
-        // إذا لم يكن Stockfish جاهزاً، انتظر قليلاً
-        setTimeout(() => getBestMove(game, callback), 100);
-        return;
-    }
-    
-    // إرسال وضعية اللعبة الحالية
-    stockfishWorker.postMessage('position fen ' + game.fen());
-    
-    // طلب أفضل حركة (عمق 15 - قوي وسريع)
-    stockfishWorker.postMessage('go depth 15');
-    
-    // حفظ الـ callback لاستخدامه عند وصول الرد
-    stockfishCallback = callback;
+// الدالة ترجع Promise
+function getBestMove(game, timeLimit) {
+    return new Promise((resolve) => {
+        if (!isStockfishReady) {
+            setTimeout(() => {
+                getBestMove(game, timeLimit).then(resolve);
+            }, 100);
+            return;
+        }
+        
+        stockfish.postMessage('position fen ' + game.fen());
+        stockfish.postMessage('go depth 15');
+        
+        const onMessage = (event) => {
+            if (event.data.startsWith('bestmove')) {
+                const bestMoveStr = event.data.split(' ')[1];
+                stockfish.removeEventListener('message', onMessage);
+                
+                if (bestMoveStr && bestMoveStr !== '(none)') {
+                    resolve({
+                        from: bestMoveStr.substring(0, 2),
+                        to: bestMoveStr.substring(2, 4),
+                        promotion: bestMoveStr.length > 4 ? bestMoveStr.substring(4, 5) : 'q'
+                    });
+                } else {
+                    resolve(null);
+                }
+            }
+        };
+        
+        stockfish.addEventListener('message', onMessage);
+    });
 }
